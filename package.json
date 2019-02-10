@@ -4,11 +4,15 @@
   "description": "",
   "main": "./app/index.js",
   "scripts": {
-    "start": "electron ./app/index.js"
+    "start": "node index.js"
   },
   "author": "Max Rumsey",
   "license": "Unlicense",
   "dependencies": {
+    "chalk": "^2.4.2",
     "sqlanywhere": "^1.0.24"
+  },
+  "devDependencies": {
+    "electron-rebuild": "^1.8.4"
   }
 }
