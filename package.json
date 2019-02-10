@@ -1,0 +1,14 @@
+{
+  "name": "wavessearch",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./app/index.js",
+  "scripts": {
+    "start": "electron ./app/index.js"
+  },
+  "author": "Max Rumsey",
+  "license": "Unlicense",
+  "dependencies": {
+    "sqlanywhere": "^1.0.24"
+  }
+}
