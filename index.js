@@ -11,7 +11,12 @@ const terms = [];
 console.log(chalk.magenta.bgBlue('SQLANYWHERE DB Search'))
 console.log(chalk.bold.underline('Copyright (c) Max Rumsey 2018') + '\n')
 
-const conn = sqlanywhere.createConnection(config, (err) => {
+const conn = sqlanywhere.createConnection({
+  Host: config.Host,
+  Password: config.Password,
+  UserId: config.UserID,
+  DatabaseName: config.DatabaseName
+}, (err) => {
   if (err) {
     console.log(err);
     return process.exit(1)
