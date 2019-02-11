@@ -1,41 +1,46 @@
 const sqlanywhere = require('sqlanywhere');
 const readline = require('readline');
 const chalk = require('chalk');
-const config = require('config');
+const config = require('./config');
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
 });
 const terms = [];
 
-console.log(chalk.magenta.bgBlue('SQLANYWHERE DB Search'))
+console.log(chalk.bold.underline('SQLANYWHERE DB Search'))
 console.log(chalk.bold.underline('Copyright (c) Max Rumsey 2018') + '\n')
 
-const conn = sqlanywhere.createConnection({
-  Host: config.Host,
+console.log(chalk.yellow('\nAttempting to connect to database.'))
+const conn = sqlanywhere.createConnection();
+conn.connect({
+  //Host: config.Host,
   Password: config.Password,
-  UserId: config.UserID,
-  DatabaseName: config.DatabaseName
+  UserId: config.UserId,
+  DatabaseFile: config.DatabaseFile
 }, (err) => {
+  console.log(chalk.yellow('Connection to database made.'))
   if (err) {
     console.log(err);
     return process.exit(1)
   }
-
+  GatherTerm(conn);
 
 })
 function GatherTerm(conn) {
   logExamples()
-  rl.question('Enter your search term(s):\n', (res) => {
-    let reqArr = res.split(', ');
+  rl.question(chalk.underline('Enter your search term(s):\n'), (res) => {
+    let reqArr = res.split(',');
     if (typeof reqArr === 'string') {
       reqArr = [res];
     }
     for (var i = 0; i < reqArr.length; i++) {
-      if (!(/^[a-zA-Z0-9]+$/.test(reqArr[i]))) {
+      if (!(/^[a-zA-Z0-9 ]+$/.test(reqArr[i]))) {
         console.log(chalk.bold.red(config.msg.search_terms_warn))
         return process.exit(0)
       }
+      reqArr[i] = reqArr[i].toLowerCase()
+      reqArr[i] = reqArr[i].trim()
     }
     terms.push(reqArr)
     console.log(config.msg.additional_term)
@@ -49,7 +54,7 @@ function GatherTerm(conn) {
   })
 }
 function ExecuteQuery(conn, terms) {
-  console.log(chalk.yellow('Moving to query execution stage.'));
+  console.log(chalk.yellow('\nMoving to query execution stage.'));
   let query;
   try {
     query = BuildQuery(terms)
@@ -58,7 +63,6 @@ function ExecuteQuery(conn, terms) {
     console.log(e);
     return process.exit(1);
   }
-  console.log(chalk.bold('QUERY: ') + query)
   conn.exec(query, (err, output) => {
     if (err) {
       console.log(chalk.bold.red(config.error.query_exec))
@@ -79,7 +83,7 @@ function BuildQuery(terms) {
   for (var i = 0; i < terms.length; i++) {
     const ans = []
     for (var j = 0; j < terms[i].length; j++) {
-      ans.push(`(${config.table}.${config.column} like '% ${terms[i][j]} %')`)
+      ans.push(`(LOWER(${config.table}.${config.column}) like '% ${terms[i][j]} %')`)
     }
     ORJOINS.push(`( ${ans.join(' AND ')} )`)
   }
@@ -91,12 +95,14 @@ function BuildQuery(terms) {
     'WHERE',
     '(',
     ORJOINS.join(' OR '),
-    ')'
-  ].join(' \n ')
+    ')',
+    'ORDER BY',
+    `${config.table}.patientid`
+  ].join(' ')
   return query;
 }
 function logExamples() {
-  console.log(chalk.bold('Example Searches:'))
+  console.log(chalk.bold('\nExample Searches:'))
   console.log([
     'stick',
     'stick, dog',

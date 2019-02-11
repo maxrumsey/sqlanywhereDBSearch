@@ -1,12 +1,13 @@
 {
   "column": "text_only",
-  "table": "patient_documents_text",
-  "Host": "192.168.20.14:2638",
-  "UserID": "csdbo",
+  "table": "patient_document_text",
+  "Host": "localhost:2638",
+  "UserId": "csdbo",
   "Password": "csdbo",
-  "DatabaseName": "cstone.db",
+  "DatabaseFile": "cstone.db",
   "affectedcols": [
-    "*"
+    "patientid",
+    "createdate"
   ],
   "error": {
     "query_build": "ERROR WHILE BUILDING SQL QUERY. PROGRAM WILL NOW EXIT.",
@@ -14,9 +15,9 @@
   },
   "msg": {
     "search_terms_warn": "Search Terms can only contain English characters and numbers. (A-Z, 0-9). Search terms must be seperated by a comma and a space.\nYour search term(s) did not follow these rules.",
-    "additional_term": "You are able to enter another search term. This will search for records that contain your original query(-ies), OR your new query."
+    "additional_term": "\nYou are able to enter another search term. This will search for records that contain your original query(-ies), OR your new query."
   },
   "questions": {
-    "enter_another": "Would you like to enter another search term? (REPLY WITH \"yes\" or \"no\")"
+    "enter_another": "Would you like to enter another search term? (REPLY WITH \"yes\" or \"no\"): "
   }
 }
