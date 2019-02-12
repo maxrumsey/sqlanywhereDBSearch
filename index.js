@@ -2,6 +2,7 @@ const sqlanywhere = require('sqlanywhere');
 const readline = require('readline');
 const chalk = require('chalk');
 const config = require('./config');
+const package = require('./package.json')
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
@@ -10,6 +11,7 @@ const terms = [];
 
 console.log(chalk.bold.underline('SQLANYWHERE DB Search'))
 console.log(chalk.bold.underline('Copyright (c) Max Rumsey 2018') + '\n')
+console.log(chalk.underline(`Version: ${package.version}`))
 
 console.log(chalk.yellow('\nAttempting to connect to database.'))
 const conn = sqlanywhere.createConnection();
@@ -29,7 +31,7 @@ conn.connect({
 })
 function GatherTerm(conn) {
   logExamples()
-  rl.question(chalk.underline('Enter your search term(s):\n'), (res) => {
+  rl.question(chalk.underline.green('Enter your search term(s):\n'), (res) => {
     let reqArr = res.split(',');
     if (typeof reqArr === 'string') {
       reqArr = [res];
@@ -44,7 +46,7 @@ function GatherTerm(conn) {
     }
     terms.push(reqArr)
     console.log(config.msg.additional_term)
-    rl.question(config.questions.enter_another, (res) => {
+    rl.question(chalk.underline.green(config.questions.enter_another), (res) => {
       if (res.toUpperCase().includes('Y')) {
         GatherTerm(conn);
       } else {
@@ -72,7 +74,13 @@ function ExecuteQuery(conn, terms) {
       console.log(chalk.bold.red('No records returned.'))
       return process.exit(0)
     } else {
-      console.table(output);
+      buildXLDocument(output)
+      try {
+        const cleanOutput = cleanArray(output)
+        console.table(cleanOutput);
+      } catch (e) {
+        console.log(e)
+      }
       return process.exit(0)
     }
   })
@@ -108,5 +116,66 @@ function logExamples() {
     'stick, dog',
     'stick, cat, dog, fish\n'
   ].join('\n'))
+}
+function buildXLDocument(inputArr) {
+  const xl = require('excel4node');
+  var wb = new xl.Workbook()
+
+  var ws = wb.addWorksheet('Output')
+
+  var style = wb.createStyle({
+    font: {
+      color: '#FF0800',
+      size: 12,
+    }
+  });
+  ws.cell(1, 1)
+    .string('Patient ID')
+    .style(style)
+  ws.cell(1, 2)
+    .string('Record Creation Date')
+    .style(style)
+  for (var i = 0; i < inputArr.length; i++) {
+    ws.cell(i+2, 1)
+      .string(inputArr[i].patientid)
+      .style(style)
+    ws.cell(i+2, 2)
+      .string(inputArr[i].createdate)
+      .style(style)
+  }
+  console.log('\n')
+  const filename = 'c:/Users/Katrin/Desktop' + new Date() + 'output.xlsx'
+  wb.write(filename, (err, stats) => {
+    if (err) {
+      console.log(err);
+      process.exit(1);
+    } else {
+      console.log('File Outputted to: ' + filename)
+    }
+  })
+
+}
+function cleanArray(input) {
+  const newObj;
+  for (var i = 0; i < input.length; i++) {
+    input[i]
+    if (newObj[input[i].patientid]) {
+      newObj[input[i].patientid].createdate.push(input[i].createdate)
+    } else {
+      newObj[input[i].patientid] = {
+        createdate: input[i].createdate,
+        patientid: input[i].patientid
+      }
+    }
+  }
+  const entries = Object.entries(newObj)
+  const finalArr = []
+  for (var j = 0; j < entries.length; j++) {
+    finalArr.push({
+      patientid: entries[j][1].patientid,
+      createdate: entries[j][1].createdate
+    })
+  }
+  return finalArr;
 }
 //cursor catch
