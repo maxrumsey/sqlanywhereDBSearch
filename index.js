@@ -13,7 +13,7 @@ console.log(chalk.bold.underline('SQLANYWHERE DB Search'))
 console.log(chalk.bold.underline('Copyright (c) Max Rumsey 2018') + '\n')
 console.log(chalk.underline(`Version: ${package.version}`))
 
-console.log(chalk.yellow('\nAttempting to connect to database.'))
+console.log(chalk.yellow('\nAttempting to connect to the SQL Anywhere database.'))
 const conn = sqlanywhere.createConnection();
 conn.connect({
   //Host: config.Host,
@@ -21,9 +21,10 @@ conn.connect({
   UserId: config.UserId,
   DatabaseFile: config.DatabaseFile
 }, (err) => {
-  console.log(chalk.yellow('Connection to database made.'))
+  console.log(chalk.yellow('Connection to the database established.'))
   if (err) {
     console.log(err);
+    console.log('Error connecting to database. Process will now exit.')
     return process.exit(1)
   }
   GatherTerm(conn);
@@ -31,7 +32,7 @@ conn.connect({
 })
 function GatherTerm(conn) {
   logExamples()
-  rl.question(chalk.underline.green('Enter your search term(s):\n'), (res) => {
+  rl.question(chalk.underline.green('Enter your search term(s), seperated by a comma:\n'), (res) => {
     let reqArr = res.split(',');
     if (typeof reqArr === 'string') {
       reqArr = [res];
@@ -56,7 +57,7 @@ function GatherTerm(conn) {
   })
 }
 function ExecuteQuery(conn, terms) {
-  console.log(chalk.yellow('\nMoving to query execution stage.'));
+  console.log(chalk.yellow('\nExecuting SQL Query.'));
   let query;
   try {
     query = BuildQuery(terms)
@@ -71,7 +72,7 @@ function ExecuteQuery(conn, terms) {
       console.log(err);
       return process.exit(1)
     } else if (!output || output.length === 0) {
-      console.log(chalk.bold.red('No records returned.'))
+      console.log(chalk.bold.red('No records returned. Program will now exit.'))
       return process.exit(0)
     } else {
       buildXLDocument(output)
@@ -81,6 +82,7 @@ function ExecuteQuery(conn, terms) {
       } catch (e) {
         console.log(e)
       }
+      console.log('\n\nExiting program. To search for another thing, restart the program.')
       return process.exit(0)
     }
   })
@@ -112,9 +114,9 @@ function BuildQuery(terms) {
 function logExamples() {
   console.log(chalk.bold('\nExample Searches:'))
   console.log([
-    'stick',
-    'stick, dog',
-    'stick, cat, dog, fish\n'
+    'stick                 - Will search the database for all records which contain the word "stick"',
+    'stick, dog            - Will search the database for all records which contain both words "stick" and "dog"',
+    'stick, cat, dog, fish - Will search the database for all records which contain the words "stick", "cat", "dog", and "fish"\n'
   ].join('\n'))
 }
 function buildXLDocument(inputArr) {
@@ -147,10 +149,11 @@ function buildXLDocument(inputArr) {
   const filename = 'c:/Users/Katrin/Desktop' + new Date() + 'output.xlsx'
   wb.write(filename, (err, stats) => {
     if (err) {
+      console.log(chalk.red.bold('Error saving file.'))
       console.log(err);
       process.exit(1);
     } else {
-      console.log('File Outputted to: ' + filename)
+      console.log('File Saved As: ' + filename)
     }
   })
 
@@ -178,4 +181,3 @@ function cleanArray(input) {
   }
   return finalArr;
 }
-//cursor catch
