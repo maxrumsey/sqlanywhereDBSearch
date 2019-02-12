@@ -7,10 +7,11 @@ const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
 });
+const fs = require('fs');
 const terms = [];
 
 console.log(chalk.bold.underline('SQLANYWHERE DB Search'))
-console.log(chalk.bold.underline('Copyright (c) Max Rumsey 2018') + '\n')
+console.log(chalk.bold.underline('Copyright (c) Max Rumsey 2019') + '\n')
 console.log(chalk.underline(`Version: ${package.version}`))
 
 console.log(chalk.yellow('\nAttempting to connect to the SQL Anywhere database.'))
@@ -47,7 +48,7 @@ function GatherTerm(conn) {
     }
     terms.push(reqArr)
     console.log(config.msg.additional_term)
-    rl.question(chalk.underline.green(config.questions.enter_another), (res) => {
+    rl.question(chalk.underline.green(config.questions.enter_another) + ' ', (res) => {
       if (res.toUpperCase().includes('Y')) {
         GatherTerm(conn);
       } else {
@@ -67,6 +68,7 @@ function ExecuteQuery(conn, terms) {
     return process.exit(1);
   }
   conn.exec(query, (err, output) => {
+    console.log('\nQuery Finished\n')
     if (err) {
       console.log(chalk.bold.red(config.error.query_exec))
       console.log(err);
@@ -77,13 +79,10 @@ function ExecuteQuery(conn, terms) {
     } else {
       buildXLDocument(output)
       try {
-        const cleanOutput = cleanArray(output)
-        console.table(cleanOutput);
+        console.table(output);
       } catch (e) {
         console.log(e)
       }
-      console.log('\n\nExiting program. To search for another thing, restart the program.')
-      return process.exit(0)
     }
   })
 
@@ -145,39 +144,18 @@ function buildXLDocument(inputArr) {
       .string(inputArr[i].createdate)
       .style(style)
   }
-  console.log('\n')
-  const filename = 'c:/Users/Katrin/Desktop' + new Date() + 'output.xlsx'
-  wb.write(filename, (err, stats) => {
+  console.log('\nFile Output Path:')
+  const filename = require('path').join(require('os').homedir(), 'Desktop') + '\\' + 'DATABASE_SEARCH' + Math.random() + '.xlsx'
+  console.log(filename)
+  wb.write(filename, (err) => {
     if (err) {
-      console.log(chalk.red.bold('Error saving file.'))
       console.log(err);
-      process.exit(1);
     } else {
-      console.log('File Saved As: ' + filename)
+      console.log('File Saved.')
     }
+    console.log('The program will now exit.')
+    console.log(process.exit(0))
   })
 
 }
-function cleanArray(input) {
-  const newObj;
-  for (var i = 0; i < input.length; i++) {
-    input[i]
-    if (newObj[input[i].patientid]) {
-      newObj[input[i].patientid].createdate.push(input[i].createdate)
-    } else {
-      newObj[input[i].patientid] = {
-        createdate: input[i].createdate,
-        patientid: input[i].patientid
-      }
-    }
-  }
-  const entries = Object.entries(newObj)
-  const finalArr = []
-  for (var j = 0; j < entries.length; j++) {
-    finalArr.push({
-      patientid: entries[j][1].patientid,
-      createdate: entries[j][1].createdate
-    })
-  }
-  return finalArr;
-}
+''
