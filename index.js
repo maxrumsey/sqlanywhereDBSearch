@@ -145,7 +145,7 @@ function buildXLDocument(inputArr) {
       .style(style)
   }
   console.log('\nFile Output Path:')
-  const filename = require('path').join(require('os').homedir(), 'Desktop') + '\\' + 'DATABASE_SEARCH' + Math.random() + '.xlsx'
+  const filename = require('path').join(require('os').homedir(), 'Desktop') + '\\' + `${terms[0].join('_').toUpperCase().replace(/ /g, '_')}.xlsx`
   console.log(filename)
   wb.write(filename, (err) => {
     if (err) {
