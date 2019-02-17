@@ -1,6 +1,6 @@
 {
   "name": "wavessearch",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "",
   "main": "./app/index.js",
   "scripts": {
@@ -10,6 +10,7 @@
   "license": "Unlicense",
   "dependencies": {
     "chalk": "^2.4.2",
+    "excel4node": "^1.7.0",
     "sqlanywhere": "^1.0.24"
   },
   "devDependencies": {
