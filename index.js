@@ -75,6 +75,7 @@ function ExecuteQuery(conn, terms) {
       return process.exit(1)
     } else if (!output || output.length === 0) {
       console.log(chalk.bold.red('No records returned. Program will now exit.'))
+      console.log('Are you sure the DB is running at this location?: ' + config.Host)
       return process.exit(0)
     } else {
       buildXLDocument(output)
